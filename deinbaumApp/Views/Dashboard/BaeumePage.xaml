@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             ios:Page.UseSafeArea="True"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:m="clr-namespace:UraniumUI.Icons.MaterialIcons;assembly=UraniumUI.Icons.MaterialIcons"
+             xmlns:material="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material"
+             xmlns:model="clr-namespace:deinBaum.Lib.BaumStruktur;assembly=deinBaum.Lib"
+             xmlns:viewmodel="clr-namespace:deinbaumApp.ViewModel"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:fa="clr-namespace:UraniumUI.Icons.FontAwesome;assembly=UraniumUI.Icons.FontAwesome"
+             x:DataType="viewmodel:BaeumeAllViewModel"
+             x:Class="deinbaumApp.Views.Dashboard.BaeumePage"
+             Title="{Binding Title}">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <toolkit:ByteArrayToImageSourceConverter x:Key="ByteArrayToImageSourceConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    
+    <!--<Shell.SearchHandler>
+        <controls:BaumSearchHandler BaumListe="{Binding Test}" 
+                                    Placeholder="Enter search term"
+                                      ShowsResults="true"
+                                    SearchBoxVisibility="Collapsible"
+                                      DisplayMemberName="Name">
+            <controls:BaumSearchHandler.ItemTemplate>
+                <DataTemplate x:DataType="model:Baum">
+                    <Grid Padding="10"
+                          ColumnDefinitions="0.15*,0.85*">
+                        <Image Source="{Binding FotoListe[0].Fotobytes, Mode=OneWay, Converter={StaticResource ByteArrayToImageSourceConverter}}"
+                               HeightRequest="40"
+                               WidthRequest="40" />
+                        <Label Grid.Column="1"
+                               Text="{Binding Name}"
+                               FontAttributes="Bold"
+                               VerticalOptions="Center" />
+                    </Grid>
+                </DataTemplate>
+            </controls:BaumSearchHandler.ItemTemplate>
+        </controls:BaumSearchHandler>
+    </Shell.SearchHandler>-->
+
+    <Grid RowDefinitions="50,*" Padding="5">
+        
+        <SearchBar x:Name="searchBar" Grid.Row="0"
+                    Placeholder="Suche..." 
+                    Text="{Binding SearchText, Mode=TwoWay}"/>
+        <ScrollView Grid.Row="1" Grid.ColumnSpan="2">
+            <RefreshView
+                    Command="{Binding GetBaeumeCommand}"
+                    IsRefreshing="{Binding IsRefreshing}">
+                <ContentView>
+                    <CollectionView
+                            ItemsSource="{Binding BaumListe}"
+                            SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="model:Baum">
+                                <SwipeView>
+                                    <SwipeView.RightItems>
+                                        <SwipeItems Mode="Execute">
+                                            <SwipeItem Text="Löschen" 
+                                               BackgroundColor="Red"
+                                               Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:BaeumeAllViewModel}}, Path=DeleteBaumCommand}"
+                                               CommandParameter="{Binding .}"/>
+                                        </SwipeItems>
+                                    </SwipeView.RightItems>
+
+                                    <Grid Padding="10">
+                                        <Frame HeightRequest="125">
+                                            <Frame.GestureRecognizers>
+                                                <TapGestureRecognizer 
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:BaeumeAllViewModel}}, Path=GoToCommand}"
+                                                    CommandParameter="{Binding .}"/>
+                                            </Frame.GestureRecognizers>
+                                            <Grid Padding="0" ColumnDefinitions="125,*">
+                                                <Image
+                                                    Aspect="AspectFill"
+                                                    HeightRequest="125"
+                                                    Source="{Binding FotoListe[0].Fotobytes, Mode=OneWay, Converter={StaticResource ByteArrayToImageSourceConverter}}"
+                                                    WidthRequest="125" />
+                                                <VerticalStackLayout
+                                                    Grid.Column="1"
+                                                    VerticalOptions="Center"
+                                                    Padding="10">
+                                                    <Label Text="{Binding Name}" />
+                                                    <Label Text="{Binding ParzellenNr}" />
+                                                    <Label Text="{Binding ID}" />
+                                                </VerticalStackLayout>
+                                            </Grid>
+                                        </Frame>
+                                    </Grid>
+                                </SwipeView>
+
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                    
+                </ContentView>
+            </RefreshView>
+            
+        </ScrollView>
+        <ActivityIndicator
+                HorizontalOptions="Fill"
+                IsEnabled="{Binding IsNotBusy}"
+                IsRunning="{Binding IsBusy}"
+                IsVisible="{Binding IsBusy}"
+                Color="{StaticResource Primary}"
+                VerticalOptions="Center" />
+    </Grid>
+</ContentPage>

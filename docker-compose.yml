@@ -1,0 +1,43 @@
+version: "3.4"
+networks:
+  deinbaum_backend:
+    driver: bridge
+    
+  
+services:
+  db:
+    container_name: deinBaumDB
+    image: postgres:latest
+    restart: always
+    environment:
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=postgrespw
+        - POSTGRES_DB=deinbaumDB
+    ports:
+        - "5432:5432"
+    networks:
+        - deinbaum_backend
+    volumes:
+        - db-data:/var/lib/postgresql/data
+  deinbaum.webapi:
+    container_name: deinBaumWebApi
+    image: ${DOCKER_REGISTRY-}deinbaumwebapi
+    build:
+      context: .
+      dockerfile: deinBaum.WebAPI/Dockerfile
+    ports:
+        - "7001:443"
+        - "7002:80"
+    depends_on:
+        - db
+    environment:
+        - DB_HOST=db
+        - DB_NAME=deinbaumDB
+        - DB_PASSWORD=postgrespw
+        - DB_PORT=5432
+    networks:
+        - deinbaum_backend
+volumes:
+  db-data:
+        driver: local
+  

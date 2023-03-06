@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:input="clr-namespace:InputKit.Shared.Controls;assembly=InputKit.Maui"
+             xmlns:validation="clr-namespace:InputKit.Shared.Validations;assembly=InputKit.Maui"
+             xmlns:material="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material"
+             xmlns:m="clr-namespace:UraniumUI.Icons.MaterialIcons;assembly=UraniumUI.Icons.MaterialIcons"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodel="clr-namespace:deinbaumApp.ViewModel"
+             xmlns:model="clr-namespace:deinBaum.Lib.BaumStruktur;assembly=deinBaum.Lib"
+             x:DataType="viewmodel:BaumArtViewModel"
+             x:Class="deinbaumApp.Views.Dashboard.BaumArtVerwaltungPage"
+             xmlns:local="clr-namespace:deinbaumApp.Views.Dashboard"
+             xmlns:cv="clr-namespace:deinbaumApp.Validations"
+             Title="Baumarten Verwaltung">
+    <ContentPage.Content>
+        <!--TODO: Wird Zurzeit noch nicht verwendet-->
+        <ScrollView>
+            <StackLayout>
+                <StackLayout Orientation="Horizontal">
+                    <Label Text="Baumart hinzufügen"></Label>
+                    <Entry Text=""></Entry>
+                    <Button Text="Hinzufügen"></Button>
+                </StackLayout>
+                <RefreshView IsRefreshing="{Binding IsRefreshing}"  Command="{Binding RefreshCommand}">
+                    <CollectionView  ItemsSource="{Binding BaumArten}">
+                        <!--<CollectionView  >
+                    <CollectionView.ItemsSource >
+                        <x:Array Type="{x:Type model:BaumArt}">
+                            <model:BaumArt
+                            ID="1"
+                            Art="test" />
+                        </x:Array>
+                    </CollectionView.ItemsSource>-->
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="model:BaumArt" >
+                                <HorizontalStackLayout Padding="10">
+                                    <Label VerticalOptions="CenterAndExpand" Text="{Binding ID}"></Label>
+                                    <Label>.</Label>
+                                    <Label VerticalOptions="CenterAndExpand" Text="{Binding Art}"></Label>
+                                    <Button Text="Delete"></Button>
+                                </HorizontalStackLayout>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </RefreshView>
+            </StackLayout>
+        </ScrollView>
+    </ContentPage.Content>
+</ContentPage>

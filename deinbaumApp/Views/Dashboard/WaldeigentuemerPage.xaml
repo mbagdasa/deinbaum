@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:input="clr-namespace:InputKit.Shared.Controls;assembly=InputKit.Maui"
+             xmlns:validation="clr-namespace:InputKit.Shared.Validations;assembly=InputKit.Maui"
+             xmlns:material="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material"
+             xmlns:m="clr-namespace:UraniumUI.Icons.MaterialIcons;assembly=UraniumUI.Icons.MaterialIcons"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:fa="clr-namespace:UraniumUI.Icons.FontAwesome;assembly=UraniumUI.Icons.FontAwesome"
+             xmlns:viewmodel="clr-namespace:deinbaumApp.ViewModel"
+             x:DataType="viewmodel:WaldeigentuemerViewModel"
+             x:Class="deinbaumApp.Views.Dashboard.WaldeigentuemerPage"
+             xmlns:local="clr-namespace:deinbaumApp.Views.Dashboard"
+             xmlns:cv="clr-namespace:deinbaumApp.Validations"
+             xmlns:model="clr-namespace:deinBaum.Lib.PersonDaten;assembly=deinBaum.Lib"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             Title="{Binding Title}">
+    <Grid RowDefinitions="50,*" Padding="5">
+        <SearchBar x:Name="searchBar"
+                   Grid.Row="0"
+                   Placeholder="Suche..." 
+                   Text="{Binding SearchText, Mode=TwoWay}"/>
+        <ScrollView Grid.Row="1">
+            <RefreshView
+                Command="{Binding GetWaldeigentuemerCommand}"
+                IsRefreshing="{Binding IsRefreshing}">
+                <ContentView>
+                    <CollectionView
+                        ItemsSource="{Binding WaldeigentuemerListe}"
+                        SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="model:Waldeigentuemer">
+                                <Grid Padding="10">
+                                    <Frame HeightRequest="125">
+                                        <Frame.GestureRecognizers>
+                                            <TapGestureRecognizer 
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:WaldeigentuemerViewModel}}, Path=GoToCommand}"
+                                                CommandParameter="{Binding .}"/>
+                                        </Frame.GestureRecognizers>
+                                        <Grid Padding="0" ColumnDefinitions="70,*">
+                                            <toolkit:AvatarView
+                                                BackgroundColor="{StaticResource Primary}"
+                                                HeightRequest="70"
+                                                TextColor="White"
+                                                WidthRequest="70">
+                                                <toolkit:AvatarView.Text>
+                                                    <MultiBinding StringFormat="{}{0}{1}">
+                                                        <Binding Path="Vorname[0]" />
+                                                        <Binding Path="Name[0]" />
+                                                    </MultiBinding>
+                                                </toolkit:AvatarView.Text>
+                                            </toolkit:AvatarView>
+                                            <VerticalStackLayout
+                                                Grid.Column="1"
+                                                VerticalOptions="Center"
+                                                Padding="10">
+                                                <Label Text="{Binding Vorname}" />
+                                                <Label Text="{Binding Name}" />
+                                                <Label Text="{Binding ID}" />
+                                            </VerticalStackLayout>
+                                        </Grid>
+                                    </Frame>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </ContentView>
+            </RefreshView>
+        </ScrollView>
+        <ActivityIndicator
+                HorizontalOptions="Fill"
+                IsEnabled="{Binding IsNotBusy}"
+                IsRunning="{Binding IsBusy}"
+                IsVisible="{Binding IsBusy}"
+                Color="{StaticResource Primary}"
+                VerticalOptions="Center" />
+    </Grid>
+</ContentPage>

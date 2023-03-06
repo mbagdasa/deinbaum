@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:input="clr-namespace:InputKit.Shared.Controls;assembly=InputKit.Maui"
+             xmlns:validation="clr-namespace:InputKit.Shared.Validations;assembly=InputKit.Maui"
+             xmlns:material="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material"
+             xmlns:m="clr-namespace:UraniumUI.Icons.MaterialIcons;assembly=UraniumUI.Icons.MaterialIcons"
+             xmlns:fa="clr-namespace:UraniumUI.Icons.FontAwesome;assembly=UraniumUI.Icons.FontAwesome"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:modelsBase="clr-namespace:deinBaum.Lib.BaumStruktur;assembly=deinBaum.Lib"
+             xmlns:modelsBasePersonen="clr-namespace:deinBaum.Lib.PersonDaten;assembly=deinBaum.Lib"
+             xmlns:models="clr-namespace:deinbaumApp.Models"
+             xmlns:viewmodel="clr-namespace:deinbaumApp.ViewModel"
+             x:DataType="viewmodel:BaumDetailViewModel"
+             x:Class="deinbaumApp.Views.Dashboard.BaumPage"
+             xmlns:local="clr-namespace:deinbaumApp.Views.Dashboard"
+             xmlns:cv="clr-namespace:deinbaumApp.Validations"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             Title="{Binding Title}">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <toolkit:ByteArrayToImageSourceConverter x:Key="ByteArrayToImageSourceConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <ContentPage.Content>
+        <Grid RowDefinitions="*,70">
+            <ScrollView Grid.Row="0">
+                <VerticalStackLayout Padding="20">
+                    <input:FormView Spacing="20" >
+
+                        <material:TextField 
+                        Title="Baumname" 
+                        TitleColor="{StaticResource Gray300}"
+                        Text="{Binding Baum.Name}">
+                        </material:TextField>
+
+                        <material:DatePickerField 
+                        x:Name="datErfassungsdatum"
+                        Title="Erfassungsdatum"  
+                        TitleColor="{StaticResource Gray300}"
+                        Icon="{FontImageSource FontFamily=MaterialRegular, Glyph={x:Static m:MaterialRegular.Calendar_month}}"
+                        Date="{Binding Baum.ErsteErfassung}">
+                            <validation:RequiredValidation Message="Pflichtfeld*" />
+                        </material:DatePickerField>
+
+                        <material:PickerField 
+                        x:Name="pickerBaumArten"
+                        Title="Baumart"
+                        TitleColor="{StaticResource Gray300}"
+                        ItemsSource="{Binding BaumArten}"
+                        SelectedIndex="{Binding SelectedBaumArtIndex, Mode=TwoWay}"
+                        Icon="{FontImageSource FontFamily=MaterialRegular, Glyph={x:Static m:MaterialRegular.Expand_circle_down}}">
+                            <validation:RequiredValidation Message="Pflichtfeld*" />
+                        </material:PickerField>
+
+                        <material:TextField 
+                            Title="Umfang [cm]" 
+                            TitleColor="{StaticResource Gray300}"
+                            Keyboard="Numeric"
+                            Text="{Binding Umfang}">
+                            <material:TextField.Validations>
+                                <cv:DoubleValidation />
+                                <validation:RequiredValidation Message="Pflichtfeld*" />
+                            </material:TextField.Validations>
+                        </material:TextField>
+
+                        <Label Text="{Binding Durchmesser, StringFormat='Durchmesser: {0} cm'}" />
+
+                        <material:TextField 
+                            Title="Baumhöhe [m]" 
+                            TitleColor="{StaticResource Gray300}"
+                            Keyboard="Numeric"
+                            Text="{Binding Baum.Baumhoehe}">
+                            <material:TextField.Validations>
+                                <cv:DoubleValidation />
+                                <validation:RequiredValidation Message="Pflichtfeld*" />
+                            </material:TextField.Validations>
+                        </material:TextField>
+
+                        <material:TextField 
+                            Title="Alter" 
+                            TitleColor="{StaticResource Gray300}"
+                            Keyboard="Numeric"
+                            Text="{Binding Baum.Alter}">
+                            <material:TextField.Validations>
+                                <cv:DoubleValidation />
+                                <validation:RequiredValidation Message="Pflichtfeld*" />
+                            </material:TextField.Validations>
+                        </material:TextField>
+
+
+                        <!--Leider ist es zur Zeit in MAUI nicht moeglich, das "SelectedItems" zur Laufzeit (Bsp. Bearbeiten eines Baumes) korrekt abzubilden.
+                    Die Selektierten Merkmale werden auf Windows ueberhaupt nicht upgedated. Auf Android wird es upgedated, aber die Darstellung nicht.
+                    Deshalb wird ein anderer Weg gewaehlt. Es wird mit zwei Listen/CollectionViews gearbeitet!-->
+
+                        <!--Grouping Merkmale-->
+                        <HorizontalStackLayout Spacing="5">
+                            <Image Source="{Binding BaumMerkmaleSelectionGroupIcon}" VerticalOptions="Center" HeightRequest="20" WidthRequest="20" />
+                            <Label Text="Merkmale:" FontAttributes="Bold"/>
+                            <HorizontalStackLayout.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding AddOrRemoveGroupDataCommand}" />
+                            </HorizontalStackLayout.GestureRecognizers>
+                        </HorizontalStackLayout>
+
+                        <!--Merkmale welche ausgewaehlt werden koennen-->
+                        <Frame BorderColor="Gray"
+                           CornerRadius="5"
+                           IsVisible="{Binding IsFrameMerkmaleToSelectEnabled}"
+                           Padding="8">
+                            <StackLayout Spacing="20" Padding="10">
+                                <CollectionView ItemsSource="{Binding BaumMerkmaleToSelect}">
+                                    <CollectionView.ItemsLayout>
+                                        <GridItemsLayout 
+                                    Orientation="Vertical"
+                                    Span="2" />
+                                    </CollectionView.ItemsLayout>
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate x:DataType="modelsBase:BaumMerkmal" >
+
+                                            <Grid Padding="10">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="35" />
+                                                </Grid.RowDefinitions>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="3*" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <Button Grid.Column="0"
+                                                ImageSource="{FontImageSource FontFamily=FASolid, Glyph={x:Static fa:Solid.Plus}}"
+                                                FontAttributes="Bold" 
+                                                WidthRequest="35"
+                                                HeightRequest="35"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:BaumDetailViewModel}}, Path=AddMerkmalToSelectionCommand}" 
+                                                CommandParameter="{Binding}">
+                                                </Button>
+                                                <Label  Grid.Column="1" Margin="10,0,0,0" LineBreakMode="CharacterWrap" FontSize="12"  VerticalOptions="CenterAndExpand" Text="{Binding Merkmal}"></Label>
+
+                                            </Grid>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
+                            </StackLayout>
+                        </Frame>
+
+                        <!--Merkmale welche ausgewaehlt wurden-->
+                        <Label Text="{Binding BaumMerkmaleSelectionText}" FontAttributes="{Binding BaumMerkmaleSelectionTextFontAttr}" />
+                        <StackLayout Spacing="20" Padding="10">
+                            <CollectionView ItemsSource="{Binding BaumMerkmaleSelection}">
+                                <CollectionView.ItemsLayout>
+                                    <GridItemsLayout 
+                                    Orientation="Vertical"
+                                    Span="2" />
+                                </CollectionView.ItemsLayout>
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate x:DataType="modelsBase:BaumMerkmal" >
+                                        <Grid Padding="10">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="35" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="3*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <Button Grid.Column="0"
+                                                ImageSource="{FontImageSource FontFamily=FASolid, Glyph={x:Static fa:Solid.Minus}}"
+                                                FontAttributes="Bold" 
+                                                FontSize="18"
+                                                BackgroundColor="Red"
+                                                WidthRequest="35"
+                                                HeightRequest="35"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:BaumDetailViewModel}}, Path=RemoveMerkmalFromSelectionCommand}" 
+                                                CommandParameter="{Binding}">
+                                            </Button>
+                                            <Label  Grid.Column="1" Margin="10,0,0,0" LineBreakMode="CharacterWrap" FontSize="12"  VerticalOptions="CenterAndExpand" Text="{Binding Merkmal}"></Label>
+
+                                        </Grid>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </StackLayout>
+
+                        <!--Zustaende welche ausgewaehlt werden koennen-->
+                        <Label Text="Zustände:" FontAttributes="Bold" />
+                        <Frame BorderColor="Gray"
+                           CornerRadius="5"
+                           Padding="8">
+                            <StackLayout Spacing="20" Padding="10">
+                                <CollectionView ItemsSource="{Binding BaumZustandList}">
+                                    <CollectionView.ItemsLayout>
+                                        <GridItemsLayout 
+                                    Orientation="Vertical"
+                                    Span="2" />
+                                    </CollectionView.ItemsLayout>
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate x:DataType="modelsBase:BaumZustand" >
+
+                                            <Grid Padding="10">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="35" />
+                                                </Grid.RowDefinitions>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="3*" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <material:CheckBox IsChecked="{Binding IsChecked}"/>
+                                                <Label  Grid.Column="1" Margin="10,0,0,0" LineBreakMode="CharacterWrap" FontSize="12"  VerticalOptions="CenterAndExpand" Text="{Binding Zustand}"></Label>
+
+                                            </Grid>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
+                            </StackLayout>
+                        </Frame>
+
+                        <Button Text="Foto aufnehmen" Command="{Binding DoCapturePhotoCommand}" />
+                        <CollectionView 
+                        ItemsSource="{Binding BaumImages}"
+                        ItemsLayout="VerticalGrid, 2"
+                        SelectionMode="None">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Padding="10">
+                                        <Image Source="{Binding ., Mode=OneWay, Converter={StaticResource ByteArrayToImageSourceConverter}}"
+                                       Aspect="AspectFill"
+                                       HeightRequest="150"
+                                           WidthRequest="150"/>
+                                        <Button Padding="0" 
+                                            FontSize="15" 
+                                            Text="X" 
+                                            Margin="0,10,15,0" 
+                                            BackgroundColor="Red" 
+                                            HeightRequest="25" 
+                                            WidthRequest="25" 
+                                            VerticalOptions="Start" 
+                                            HorizontalOptions="End"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:BaumDetailViewModel}}, Path=DeleteFotoCommand}"
+                                            CommandParameter="{Binding .}">
+                                        </Button>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+
+                        <Button Text="Feldmitarbeiter auswählen" Command="{Binding GoToMitarbeiterPageCommand}" />
+                        <CollectionView
+                        ItemsSource="{Binding MitarbeiterListe}"
+                        SelectionMode="None">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="modelsBasePersonen:Feldmitarbeiter">
+                                    <Grid Padding="10">
+                                        <Frame HeightRequest="125">
+                                            <Grid Padding="0" ColumnDefinitions="125,*">
+                                                <Image
+                                            Aspect="AspectFill"
+                                            HeightRequest="125"
+                                            Source="{Binding Profilbild, Mode=OneWay, Converter={StaticResource ByteArrayToImageSourceConverter}}"
+                                            WidthRequest="125" />
+                                                <VerticalStackLayout
+                                            Grid.Column="1"
+                                            VerticalOptions="Center"
+                                            Padding="10">
+                                                    <Label Text="{Binding Vorname}" />
+                                                    <Label Text="{Binding Name}" />
+                                                    <Label Text="{Binding ID}" />
+                                                </VerticalStackLayout>
+                                            </Grid>
+                                        </Frame>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+
+                        <material:TextField 
+                        Title="Parzellennummer" 
+                        TitleColor="{StaticResource Gray300}"
+                        Keyboard="Numeric"
+                        Text="{Binding Baum.ParzellenNr}">
+                            <material:TextField.Validations>
+                                <validation:DigitsOnlyValidation Message="Nur Zahlen erlaubt*" />
+                                <validation:RequiredValidation Message="Pflichtfeld*" />
+                            </material:TextField.Validations>
+                        </material:TextField>
+
+                        <Button Text="Waldeigentümer auswählen" Command="{Binding GoToWaldeigentuemerPageCommand}" />
+                        <CollectionView
+                        ItemsSource="{Binding WaldeigentuemerListe}"
+                        SelectionMode="None">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="modelsBasePersonen:Waldeigentuemer">
+                                    <Grid Padding="10">
+                                        <Frame HeightRequest="125">
+                                            <Grid Padding="0" ColumnDefinitions="70,*">
+                                                <toolkit:AvatarView
+                                            BackgroundColor="{StaticResource Primary}"
+                                            HeightRequest="70"
+                                            TextColor="White"
+                                            WidthRequest="70">
+                                                    <toolkit:AvatarView.Text>
+                                                        <MultiBinding StringFormat="{}{0}{1}">
+                                                            <Binding Path="Vorname[0]" />
+                                                            <Binding Path="Name[0]" />
+                                                        </MultiBinding>
+                                                    </toolkit:AvatarView.Text>
+                                                </toolkit:AvatarView>
+                                                <VerticalStackLayout
+                                            Grid.Column="1"
+                                            VerticalOptions="Center"
+                                            Padding="10">
+                                                    <Label Text="{Binding Vorname}" />
+                                                    <Label Text="{Binding Name}" />
+                                                    <Label Text="{Binding ID}" />
+                                                </VerticalStackLayout>
+                                            </Grid>
+                                        </Frame>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+
+                        <!--Position-->
+                        <Frame BorderColor="Gray"
+                           CornerRadius="5"
+                           Padding="8">
+                            <StackLayout Spacing="20" Padding="10">
+                                <material:TextField 
+                                Title="Baumposition X-Koordinate" 
+                                TitleColor="{StaticResource Gray300}"
+                                Keyboard="Numeric"
+                                Text="{Binding WGS84_XKoordinaten}">
+                                    <material:TextField.Validations>
+                                        <cv:DoubleValidation />
+                                        <validation:RequiredValidation Message="Pflichtfeld*" />
+                                    </material:TextField.Validations>
+                                </material:TextField>
+                                <material:TextField 
+                                Title="Baumposition Y-Koordinate" 
+                                TitleColor="{StaticResource Gray300}"
+                                Keyboard="Numeric"
+                                Text="{Binding WGS84_YKoordinaten}">
+                                    <material:TextField.Validations>
+                                        <cv:DoubleValidation />
+                                        <validation:RequiredValidation Message="Pflichtfeld*" />
+                                    </material:TextField.Validations>
+                                </material:TextField>
+
+                                <Label Text="Aktuelle Position:" FontAttributes="Bold" Margin="0,6,0,0" />
+                                <Label Text="{Binding CurrentLocationStr}" />
+                                <Button Text="Aktualisieren" Command="{Binding GetCurrentLocationCommand}" IsEnabled="{Binding IsNotBusy}" />
+                                <Button Text="Position übernehmen" Command="{Binding SetCurrentLocationCommand}" IsEnabled="{Binding IsSetLocationEnabled}" />
+                                <Button Text="Auf Karte anzeigen" Command="{Binding GoToMapCommand}" />
+                            </StackLayout>
+                        </Frame>
+
+                        <material:TextField 
+                        Title="Bemerkung" 
+                        TitleColor="{StaticResource Gray300}"
+                        Text="{Binding Baum.Bemerkung}">
+                        </material:TextField>
+                    </input:FormView>
+                </VerticalStackLayout>
+            </ScrollView>
+            <Button Padding ="00" Margin="20,10,20,20" Grid.Row="1" StyleClass="FilledButton"
+                    Text="{Binding SaveButtonText}"
+                    input:FormView.IsSubmitButton="True"
+                    Command="{Binding SaveBaumCommand}"/>
+
+        </Grid>
+    </ContentPage.Content>
+</ContentPage>

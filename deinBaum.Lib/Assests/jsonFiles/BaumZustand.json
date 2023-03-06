@@ -1,0 +1,6 @@
+[
+  { "ID": 1,"Zustand": "tot" },
+  { "ID": 2,"Zustand": "lebendig" },
+  { "ID": 3,"Zustand": "stehend" },
+  { "ID": 4,"Zustand": "liegend" }
+]
